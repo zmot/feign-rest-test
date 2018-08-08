@@ -6,14 +6,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class NameService {
-    private ExternalNameServiceClient externalNameServiceClient;
+    private final ExternalNameServiceClient externalNameServiceClient;
 
     @Autowired
     public NameService(ExternalNameServiceClient externalNameServiceClient) {
         this.externalNameServiceClient = externalNameServiceClient;
     }
 
-    public String getName() {
+    String getName() {
         return externalNameServiceClient.getName();
     }
 }
