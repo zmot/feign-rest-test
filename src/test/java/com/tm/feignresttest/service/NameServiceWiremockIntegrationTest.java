@@ -18,55 +18,55 @@ import static org.junit.Assert.assertThat;
 public class NameServiceWiremockIntegrationTest {
 
     @Rule
-    public final WireMockRule WIREMOCK = new WireMockRule(8085);
+    public final WireMockRule server = new WireMockRule(8085);
 
     @Autowired
     private NameService nameService;
 
     @Test
     public void shouldReturnName() {
-        WIREMOCK.stubFor(get(urlEqualTo("/external-service/api/name"))
+        server.stubFor(get(urlEqualTo("/external-service/api/name"))
                 .willReturn(aResponse().withStatus(200).withBody("wiremock")));
 
         assertThat(nameService.getName(), is("wiremock"));
 
-        WIREMOCK.verify(1, getRequestedFor(urlEqualTo("/external-service/api/name")));
+        server.verify(1, getRequestedFor(urlEqualTo("/external-service/api/name")));
     }
 
     @Test
     public void shouldReturnOneNameThenOtherName() {
-        WIREMOCK.stubFor(get(urlEqualTo("/external-service/api/name"))
+        server.stubFor(get(urlEqualTo("/external-service/api/name"))
                 .inScenario("scenario A")
                 .whenScenarioStateIs(Scenario.STARTED)
                 .willReturn(aResponse().withStatus(200).withBody("wiremock"))
                 .willSetStateTo("state X"));
 
-        WIREMOCK.stubFor(get(urlEqualTo("/external-service/api/name"))
+        server.stubFor(get(urlEqualTo("/external-service/api/name"))
                 .inScenario("scenario A")
                 .whenScenarioStateIs("state X")
-                .willReturn(aResponse().withStatus(200).withBody("other wiremock")));
+                .willReturn(aResponse().withStatus(200).withBody("other server")));
 
         assertThat(nameService.getName(), is("wiremock"));
-        assertThat(nameService.getName(), is("other wiremock"));
+        assertThat(nameService.getName(), is("other server"));
 
-        WIREMOCK.verify(2, getRequestedFor(urlEqualTo("/external-service/api/name")));
+        server.verify(2, getRequestedFor(urlEqualTo("/external-service/api/name")));
     }
 
     @Test
     public void shouldRetryOnTeapotStatusAndSucceed() {
-        WIREMOCK.stubFor(get(urlEqualTo("/external-service/api/name"))
+        server.stubFor(get(urlEqualTo("/external-service/api/name"))
                 .inScenario("scenario B")
                 .whenScenarioStateIs(Scenario.STARTED)
                 .willReturn(aResponse().withStatus(418))
                 .willSetStateTo("after teapot"));
 
-        WIREMOCK.stubFor(get(urlEqualTo("/external-service/api/name"))
+        server.stubFor(get(urlEqualTo("/external-service/api/name"))
                 .inScenario("scenario B")
                 .whenScenarioStateIs("after teapot")
                 .willReturn(aResponse().withStatus(200).withBody("wiremock")));
 
         assertThat(nameService.getName(), is("wiremock"));
 
-        WIREMOCK.verify(2, getRequestedFor(urlEqualTo("/external-service/api/name")));
+        server.verify(2, getRequestedFor(urlEqualTo("/external-service/api/name")));
     }
 }

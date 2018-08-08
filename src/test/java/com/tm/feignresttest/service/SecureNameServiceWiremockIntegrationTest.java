@@ -21,7 +21,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @ActiveProfiles("https")
 public class SecureNameServiceWiremockIntegrationTest {
     @Rule
-    public WireMockRule wiremock = new WireMockRule(wireMockConfig().httpsPort(8443));
+    public WireMockRule server = new WireMockRule(wireMockConfig().httpsPort(8443));
 
     @Autowired
     private NameService secureNameService;
@@ -29,7 +29,7 @@ public class SecureNameServiceWiremockIntegrationTest {
     @Test
     public void shouldUseHttps() {
 
-        wiremock.stubFor(get(urlEqualTo("/external-service/api/name"))
+        server.stubFor(get(urlEqualTo("/external-service/api/name"))
                 .willReturn(aResponse().withStatus(200).withBody("wiremock")));
 
         assertThat(secureNameService.getName(), is("wiremock"));
